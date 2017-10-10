@@ -1,10 +1,14 @@
 package com.mohen.edu.record.library;
 
+import com.google.gson.Gson;
+
 import org.json.JSONObject;
 import org.xutils.common.Callback;
 import org.xutils.common.util.LogUtil;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
+
+import java.util.List;
 
 /**
  * Created by Kenneth on 2017/9/27.
@@ -23,7 +27,7 @@ public class ActionRecordHttpClient {
     public void submit(final ActionEntity entity){
         RequestParams params = new RequestParams(uri);
         params.addParameter("cmd", "Report");
-        params.addParameter("mode", "uploadReport");
+        params.addParameter("mode", "addReport");
         params.addParameter("key", key);
         params.addParameter("rid", String.valueOf(Math.random()));
         params.addParameter("name", entity.getName());
@@ -52,6 +56,37 @@ public class ActionRecordHttpClient {
                 } catch (DbException e) {
                     e.printStackTrace();
                 }*/
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException e) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+    }
+
+    public void submitList(final List<ActionEntity> list){
+        RequestParams params = new RequestParams(uri+"?cmd=Report&mode=uploadReport&" +
+                "key="+key+"&rid="+String.valueOf(Math.random()));
+        String dataStr = new Gson().toJson(list);
+        /*JsonArray jsonArray = new Gson().toJsonTree(list,
+                new TypeToken<List<ActionEntity>>(){}.getType()).getAsJsonArray();*/
+        params.addParameter("data", dataStr.getBytes());
+//        params.addHeader("Content-Type", "text/html");
+        x.http().post(params, new Callback.CommonCallback<JSONObject>() {
+            @Override
+            public void onSuccess(JSONObject jsonObject) {
+                LogUtil.d("upload record list "+jsonObject);
+            }
+
+            @Override
+            public void onError(Throwable throwable, boolean b) {
 
             }
 
