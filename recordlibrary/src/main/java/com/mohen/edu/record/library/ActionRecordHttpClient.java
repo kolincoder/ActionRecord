@@ -1,13 +1,17 @@
 package com.mohen.edu.record.library;
 
 import com.google.gson.Gson;
+import com.mohen.edu.record.library.db.DbHelper;
 
 import org.json.JSONObject;
+import org.xutils.DbManager;
 import org.xutils.common.Callback;
 import org.xutils.common.util.LogUtil;
+import org.xutils.ex.DbException;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -39,24 +43,12 @@ public class ActionRecordHttpClient {
             @Override
             public void onSuccess(JSONObject jsonObject) {
                 LogUtil.d("record action success: "+jsonObject.toString() );
-                /*DbManager db = DbHelper.getInstance().getDB();
-                try {
-                    db.dropTable(ActionEntity.class);
-                } catch (DbException e) {
-                    e.printStackTrace();
-                }*/
             }
 
             @Override
             public void onError(Throwable throwable, boolean b) {
                 LogUtil.e("record action error: "+throwable.getMessage());
-                /*DbManager db = DbHelper.getInstance().getDB();
-                try {
-                    db.saveOrUpdate(entity);
-                } catch (DbException e) {
-                    e.printStackTrace();
-                }*/
-
+                saveToDatabase(entity);
             }
 
             @Override
@@ -75,19 +67,17 @@ public class ActionRecordHttpClient {
         RequestParams params = new RequestParams(uri+"?cmd=Report&mode=uploadReport&" +
                 "key="+key+"&rid="+String.valueOf(Math.random()));
         String dataStr = new Gson().toJson(list);
-        /*JsonArray jsonArray = new Gson().toJsonTree(list,
-                new TypeToken<List<ActionEntity>>(){}.getType()).getAsJsonArray();*/
         params.addParameter("data", dataStr.getBytes());
-//        params.addHeader("Content-Type", "text/html");
         x.http().post(params, new Callback.CommonCallback<JSONObject>() {
             @Override
             public void onSuccess(JSONObject jsonObject) {
-                LogUtil.d("upload record list "+jsonObject);
+                LogUtil.d("upload record list success "+jsonObject);
             }
 
             @Override
             public void onError(Throwable throwable, boolean b) {
-
+                LogUtil.e("upload record list error: "+throwable.getMessage());
+                saveToDatabase(list);
             }
 
             @Override
@@ -101,4 +91,25 @@ public class ActionRecordHttpClient {
             }
         });
     }
+
+    public void submitFromDatabase(){
+        DbManager db = DbHelper.getInstance().getDB();
+        try {
+            List<ActionEntity> list = db.findAll(ActionEntity.class);
+            submitList(list);
+            db.delete(ActionEntity.class);
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveToDatabase(Object object){
+        DbManager db = DbHelper.getInstance().getDB();
+        try {
+            db.saveOrUpdate(object);
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
