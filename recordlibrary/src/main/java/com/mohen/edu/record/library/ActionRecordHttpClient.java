@@ -96,8 +96,10 @@ public class ActionRecordHttpClient {
         DbManager db = DbHelper.getInstance().getDB();
         try {
             List<ActionEntity> list = db.findAll(ActionEntity.class);
-            submitList(list);
-            db.delete(ActionEntity.class);
+            if (list.size()>0){
+                submitList(list);
+                db.delete(ActionEntity.class);
+            }
         } catch (DbException e) {
             e.printStackTrace();
         }
