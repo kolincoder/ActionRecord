@@ -35,7 +35,8 @@ public class ActionRecordHttpClient {
         params.addParameter("key", key);
         params.addParameter("rid", String.valueOf(Math.random()));
         params.addParameter("name", entity.getName());
-        params.addParameter("v1", String.valueOf("1"));
+        params.addParameter("v1", entity.getV1());
+        params.addParameter("v2", entity.getV2());
         params.addParameter("cfg", entity.getCfg());
         params.addParameter("type", entity.getType());
 
